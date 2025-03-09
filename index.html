@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jogo da Forca</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Jogo da Forca</h1>
+        <h2>Criado por Vrivri</h2>
+        <p>Esta é uma adaptação do bot do Telegram de mesmo nome em uma versão simplificada.</p>
+        <p><a href="https://t.me/forcavoxbot" target="_blank">Jogue pelo bot</a></p>
+        <p><a href="https://github.com/vrivrixd/jogodaforca" target="_blank">Código Fonte no GitHub</a></p>
+
+        <h2>Jogo Atual</h2>
+        <div id="game-section">
+            <div id="game-active" class="hidden">
+                <h2>Número de Acertos</h2>
+                <p id="correct-count">0</p>
+                <h2>Número de Erros</h2>
+                <p id="wrong-count">0</p>
+                <h2>Palavra Atual</h2>
+                <p id="word-display"></p>
+                <input type="text" id="letter-input" maxlength="5" placeholder="Digite uma Letra..." aria-label="Digite uma letra">
+                <button id="guess-button">Enviar</button>
+            </div>
+        </div>
+        <p id="no-game-message">Nenhum jogo em andamento.</p>
+        <button id="new-game-button">Novo Jogo</button>
+        <div id="end-message" class="hidden"></div>
+        <div id="notification" class="notification hidden" role="alert" aria-live="polite"></div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
