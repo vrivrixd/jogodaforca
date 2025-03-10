@@ -47,7 +47,7 @@ a:hover {
     display: none;
 }
 
-input {
+input[type="text"] {
     padding: 5px;
     font-size: 1em;
     margin: 10px 0;
@@ -97,4 +97,9 @@ button:disabled {
 
 .notification.show {
     opacity: 1;
+}
+
+.sound-toggle {
+    margin-top: 10px;
+    text-align: center; /* Centraliza a checkbox */
 }
