@@ -12,6 +12,22 @@ const guessButton = document.getElementById('guess-button');
 const newGameButton = document.getElementById('new-game-button');
 const endMessage = document.getElementById('end-message');
 const notification = document.getElementById('notification');
+const soundToggle = document.getElementById('sound-toggle');
+
+// Inicializa os objetos de áudio
+const acertarSound = new Audio('acertar.wav');
+const errarSound = new Audio('errar.wav');
+const ganharSound = new Audio('ganhar.wav');
+const perderSound = new Audio('perder.wav');
+
+// Função para tocar som, interrompendo o anterior
+function playSound(sound) {
+    if (soundToggle.checked) {
+        sound.pause();         // Para o som atual, se estiver tocando
+        sound.currentTime = 0; // Reinicia o som para o início
+        sound.play();          // Toca o som novamente
+    }
+}
 
 // Carrega palavras do arquivo palavras.txt
 async function loadWords() {
@@ -21,7 +37,7 @@ async function loadWords() {
         return text.split('\n').map(word => word.trim().toUpperCase()).filter(word => word);
     } catch (error) {
         console.error('Erro ao carregar palavras:', error);
-        return ['ERRO']; // Palavra padrão
+        return ['ERRO'];
     }
 }
 
@@ -34,7 +50,7 @@ async function loadAcertoMessages() {
         if (!mensagensAcerto.length) throw new Error('Arquivo vazio');
     } catch (error) {
         console.error('Erro ao carregar mensagens de acerto:', error);
-        mensagensAcerto = ['Você acertou uma letra!']; // Mensagem padrão
+        mensagensAcerto = ['Você acertou uma letra!'];
     }
 }
 
@@ -47,23 +63,24 @@ async function loadErroMessages() {
         if (!mensagensErro.length) throw new Error('Arquivo vazio');
     } catch (error) {
         console.error('Erro ao carregar mensagens de erro:', error);
-        mensagensErro = ['Letra incorreta!']; // Mensagem padrão
+        mensagensErro = ['Letra incorreta!'];
     }
 }
 
-// Exibe mensagem na notificação
-function showNotification(text) {
+// Exibe mensagem na notificação e toca som se ativado
+function showNotification(text, sound) {
     notification.textContent = text;
     notification.classList.remove('hidden');
     notification.classList.add('show');
-    notification.focus(); // Garante que o leitor de tela anuncie
+    notification.focus();
+    if (sound) playSound(sound); // Usa a nova função para tocar o som
     setTimeout(() => {
         notification.classList.remove('show');
         setTimeout(() => {
             notification.classList.add('hidden');
-            if (game && !letterInput.disabled) letterInput.focus(); // Retorna o foco se o jogo ainda estiver ativo
-        }, 500); // Tempo para transição
-    }, 3000); // Notificação visível por 3 segundos
+            if (game && !letterInput.disabled) letterInput.focus();
+        }, 500);
+    }, 3000);
 }
 
 // Inicia um novo jogo
@@ -110,7 +127,6 @@ function processGuess() {
     const input = letterInput.value.trim();
     letterInput.value = '';
 
-    // Verifica se é o comando "debug" (case insensitive)
     if (input.toLowerCase() === 'debug') {
         if (game) {
             showNotification(`A palavra é: ${game.word}`);
@@ -120,7 +136,6 @@ function processGuess() {
         return;
     }
 
-    // Validação de entrada (case insensitive)
     const letter = input.toUpperCase();
     if (!input || input.length > 1 || !/[a-zA-Z]/.test(input)) {
         showNotification('Por favor, insira uma única letra válida.');
@@ -139,12 +154,12 @@ function processGuess() {
             }
         }
         const mensagemAcerto = mensagensAcerto[Math.floor(Math.random() * mensagensAcerto.length)];
-        showNotification(mensagemAcerto);
+        showNotification(mensagemAcerto, acertarSound);
     } else {
         game.wrongLetters.push(letter);
         game.attempts--;
         const mensagemErro = mensagensErro[Math.floor(Math.random() * mensagensErro.length)];
-        showNotification(`${mensagemErro} Tentativas restantes: ${game.attempts}.`);
+        showNotification(`${mensagemErro} Tentativas restantes: ${game.attempts}.`, errarSound);
     }
 
     updateDisplay();
@@ -155,9 +170,11 @@ function processGuess() {
 function checkGameEnd() {
     if (!game.correctLetters.includes('_')) {
         endMessage.textContent = `Parabéns, você ganhou! A palavra era ${game.word}.`;
+        playSound(ganharSound); // Usa a nova função para tocar o som
         endGame();
     } else if (game.attempts <= 0) {
         endMessage.textContent = `Você perdeu! A palavra era ${game.word}.`;
+        playSound(perderSound); // Usa a nova função para tocar o som
         endGame();
     }
 }
@@ -177,5 +194,3 @@ newGameButton.addEventListener('click', startNewGame);
 letterInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') processGuess();
 });
-
-// Não inicia o jogo automaticamente
