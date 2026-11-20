@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jogo da Forca</title>
+    <link rel="alternate" hreflang="en" href="../en/">
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        <p class="language-switch"><a href="../en/" hreflang="en" lang="en">English version</a></p>
+        <h1>Jogo da Forca</h1>
+        <h2>Criado por Vrivri</h2>
+        <p>Esta é uma adaptação do bot do Telegram de mesmo nome em uma versão simplificada.</p>
+        <p><a href="https://t.me/forcavoxbot" target="_blank">Jogue pelo bot</a></p>
+        <p><a href="https://github.com/vrivrixd/jogodaforca" target="_blank">Código Fonte no GitHub</a></p>
+
+        <h2>Jogo Atual</h2>
+        <div id="game-section">
+            <div id="game-active" class="hidden">
+                <h2>Número de Acertos</h2>
+                <p id="correct-count">0</p>
+                <h2>Número de Erros</h2>
+                <p id="wrong-count">0</p>
+                <h2>Palavra Atual</h2>
+                <p id="word-display"></p>
+                <input type="text" id="letter-input" maxlength="5" placeholder="Digite uma Letra..." aria-label="Digite uma letra">
+                <button id="guess-button">Enviar</button>
+                <div class="sound-toggle">
+                    <input type="checkbox" id="sound-toggle" checked aria-label="Ativar/desativar sons">
+                </div>
+            </div>
+        </div>
+        <p id="no-game-message">Nenhum jogo em andamento.</p>
+        <button id="new-game-button">Novo Jogo</button>
+        <div id="end-message" class="hidden"></div>
+        <div id="notification" class="notification hidden" role="alert" aria-live="polite"></div>
+    </div>
+    <script>
+        // Textos usados pelo script.js. {word} e {attempts} são substituídos durante o jogo.
+        const TEXTS = {
+            wordIs: 'A palavra é: {word}',
+            noGameToReveal: 'Nenhum jogo em andamento para revelar.',
+            invalidLetter: 'Por favor, insira uma única letra válida.',
+            alreadyTried: 'Você já tentou essa letra.',
+            attemptsLeft: 'Tentativas restantes: {attempts}.',
+            won: 'Parabéns, você ganhou! A palavra era {word}.',
+            lost: 'Você perdeu! A palavra era {word}.',
+            errorLoadingWords: 'Erro ao carregar palavras.',
+            defaultCorrectMessage: 'Você acertou uma letra!',
+            defaultWrongMessage: 'Letra incorreta!'
+        };
+    </script>
+    <script src="../script.js"></script>
+</body>
+</html>

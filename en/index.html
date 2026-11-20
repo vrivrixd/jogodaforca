@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hangman</title>
+    <link rel="alternate" hreflang="pt-BR" href="../pt/">
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        <p class="language-switch"><a href="../pt/" hreflang="pt-BR" lang="pt-BR">Versão em português</a></p>
+        <h1>Hangman</h1>
+        <h2>Created by Vrivri</h2>
+        <p>This is a simplified version of the Telegram bot of the same name.</p>
+        <p><a href="https://t.me/forcavoxbot" target="_blank">Play with the bot (in Portuguese)</a></p>
+        <p><a href="https://github.com/vrivrixd/jogodaforca" target="_blank">Source code on GitHub</a></p>
+
+        <h2>Current Game</h2>
+        <div id="game-section">
+            <div id="game-active" class="hidden">
+                <h2>Correct Letters</h2>
+                <p id="correct-count">0</p>
+                <h2>Wrong Letters</h2>
+                <p id="wrong-count">0</p>
+                <h2>Current Word</h2>
+                <p id="word-display"></p>
+                <input type="text" id="letter-input" maxlength="5" placeholder="Type a letter..." aria-label="Type a letter">
+                <button id="guess-button">Submit</button>
+                <div class="sound-toggle">
+                    <input type="checkbox" id="sound-toggle" checked aria-label="Turn sounds on or off">
+                </div>
+            </div>
+        </div>
+        <p id="no-game-message">No game in progress.</p>
+        <button id="new-game-button">New Game</button>
+        <div id="end-message" class="hidden"></div>
+        <div id="notification" class="notification hidden" role="alert" aria-live="polite"></div>
+    </div>
+    <script>
+        // Texts used by script.js. {word} and {attempts} are filled in during the game.
+        const TEXTS = {
+            wordIs: 'The word is: {word}',
+            noGameToReveal: 'No game in progress to reveal.',
+            invalidLetter: 'Please enter a single valid letter.',
+            alreadyTried: 'You already tried that letter.',
+            attemptsLeft: 'Attempts left: {attempts}.',
+            won: 'Congratulations, you won! The word was {word}.',
+            lost: 'You lost! The word was {word}.',
+            errorLoadingWords: 'Error loading words.',
+            defaultCorrectMessage: 'You guessed a letter!',
+            defaultWrongMessage: 'Wrong letter!'
+        };
+    </script>
+    <script src="../script.js"></script>
+</body>
+</html>

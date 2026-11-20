@@ -1,6 +1,11 @@
+// Shared game code for every language.
+// Each language has its own folder (pt/, en/...) with index.html, which defines TEXTS,
+// and the files words.txt, correct_messages.txt and wrong_messages.txt.
+// Those files are loaded relative to the page; the sounds are shared and live next to this script.
+
 let game = null;
-let mensagensAcerto = [];
-let mensagensErro = [];
+let correctMessages = [];
+let wrongMessages = [];
 
 const noGameMessage = document.getElementById('no-game-message');
 const gameActiveSection = document.getElementById('game-active');
@@ -14,66 +19,79 @@ const endMessage = document.getElementById('end-message');
 const notification = document.getElementById('notification');
 const soundToggle = document.getElementById('sound-toggle');
 
-// Inicializa os objetos de áudio
-const acertarSound = new Audio('acertar.wav');
-const errarSound = new Audio('errar.wav');
-const ganharSound = new Audio('ganhar.wav');
-const perderSound = new Audio('perder.wav');
+// Fill {name} placeholders in a text from TEXTS
+function format(text, values) {
+    return text.replace(/\{(\w+)\}/g, (match, name) => (name in values ? values[name] : match));
+}
 
-// Função para tocar som, interrompendo o anterior
+// Initialize the audio objects (shared by all languages)
+const scriptUrl = document.currentScript.src;
+const correctSound = new Audio(new URL('correct.wav', scriptUrl));
+const wrongSound = new Audio(new URL('wrong.wav', scriptUrl));
+const winSound = new Audio(new URL('win.wav', scriptUrl));
+const loseSound = new Audio(new URL('lose.wav', scriptUrl));
+
+// Play a sound, interrupting the previous one
 function playSound(sound) {
     if (soundToggle.checked) {
-        sound.pause();         // Para o som atual, se estiver tocando
-        sound.currentTime = 0; // Reinicia o som para o início
-        sound.play();          // Toca o som novamente
+        sound.pause();         // Stop the current sound, if it is playing
+        sound.currentTime = 0; // Rewind the sound to the start
+        sound.play();          // Play the sound again
     }
 }
 
-// Carrega palavras do arquivo palavras.txt
+// Letter without accents, so that typing A also finds Ã, Á, Â... and C finds Ç
+function baseLetter(char) {
+    return char.normalize('NFD').replace(/[̀-ͯ]/g, '');
+}
+
+// Load a text file from the language folder, one entry per line
+async function loadLines(file) {
+    const response = await fetch(file);
+    if (!response.ok) throw new Error(`${file}: HTTP ${response.status}`);
+    const text = await response.text();
+    return text.split('\n').map(line => line.trim()).filter(line => line);
+}
+
+// Load words from words.txt
 async function loadWords() {
     try {
-        const response = await fetch('palavras.txt');
-        const text = await response.text();
-        return text.split('\n').map(word => word.trim().toUpperCase()).filter(word => word);
+        return (await loadLines('words.txt')).map(word => word.toUpperCase());
     } catch (error) {
-        console.error('Erro ao carregar palavras:', error);
-        return ['ERRO'];
+        console.error('Error loading words:', error);
+        return [];
     }
 }
 
-// Carrega mensagens de acerto do arquivo mensagens_acerto.txt
-async function loadAcertoMessages() {
+// Load correct-guess messages from correct_messages.txt
+async function loadCorrectMessages() {
     try {
-        const response = await fetch('mensagens_acerto.txt');
-        const text = await response.text();
-        mensagensAcerto = text.split('\n').map(line => line.trim()).filter(line => line);
-        if (!mensagensAcerto.length) throw new Error('Arquivo vazio');
+        correctMessages = await loadLines('correct_messages.txt');
+        if (!correctMessages.length) throw new Error('Empty file');
     } catch (error) {
-        console.error('Erro ao carregar mensagens de acerto:', error);
-        mensagensAcerto = ['Você acertou uma letra!'];
+        console.error('Error loading correct-guess messages:', error);
+        correctMessages = [TEXTS.defaultCorrectMessage];
     }
 }
 
-// Carrega mensagens de erro do arquivo mensagens_erro.txt
-async function loadErroMessages() {
+// Load wrong-guess messages from wrong_messages.txt
+async function loadWrongMessages() {
     try {
-        const response = await fetch('mensagens_erro.txt');
-        const text = await response.text();
-        mensagensErro = text.split('\n').map(line => line.trim()).filter(line => line);
-        if (!mensagensErro.length) throw new Error('Arquivo vazio');
+        wrongMessages = await loadLines('wrong_messages.txt');
+        if (!wrongMessages.length) throw new Error('Empty file');
     } catch (error) {
-        console.error('Erro ao carregar mensagens de erro:', error);
-        mensagensErro = ['Letra incorreta!'];
+        console.error('Error loading wrong-guess messages:', error);
+        wrongMessages = [TEXTS.defaultWrongMessage];
     }
 }
 
-// Exibe mensagem na notificação e toca som se ativado
+// Show a message in the notification and play a sound if enabled
 function showNotification(text, sound) {
     notification.textContent = text;
     notification.classList.remove('hidden');
     notification.classList.add('show');
     notification.focus();
-    if (sound) playSound(sound); // Usa a nova função para tocar o som
+    if (sound) playSound(sound);
     setTimeout(() => {
         notification.classList.remove('show');
         setTimeout(() => {
@@ -83,21 +101,22 @@ function showNotification(text, sound) {
     }, 3000);
 }
 
-// Inicia um novo jogo
+// Start a new game
 async function startNewGame() {
     const words = await loadWords();
     if (!words.length) {
-        endMessage.textContent = 'Erro ao carregar palavras.';
+        endMessage.textContent = TEXTS.errorLoadingWords;
         endMessage.classList.remove('hidden');
         return;
     }
 
-    if (!mensagensAcerto.length) await loadAcertoMessages();
-    if (!mensagensErro.length) await loadErroMessages();
+    if (!correctMessages.length) await loadCorrectMessages();
+    if (!wrongMessages.length) await loadWrongMessages();
 
     game = {
         word: words[Math.floor(Math.random() * words.length)],
         correctLetters: [],
+        triedLetters: [],
         wrongLetters: [],
         attempts: 7
     };
@@ -115,71 +134,77 @@ async function startNewGame() {
     letterInput.focus();
 }
 
-// Atualiza a exibição do jogo
+// Update the game display
 function updateDisplay() {
     wordDisplay.textContent = game.correctLetters.join('');
-    correctCount.textContent = game.word.split('').filter((char, i) => game.correctLetters[i] !== '_').length;
+    correctCount.textContent = game.correctLetters.filter(char => char !== '_').length;
     wrongCount.textContent = game.wrongLetters.length;
 }
 
-// Processa a tentativa de uma letra
+// Process a letter guess
 function processGuess() {
     const input = letterInput.value.trim();
     letterInput.value = '';
 
     if (input.toLowerCase() === 'debug') {
         if (game) {
-            showNotification(`A palavra é: ${game.word}`);
+            showNotification(format(TEXTS.wordIs, { word: game.word }));
         } else {
-            showNotification('Nenhum jogo em andamento para revelar.');
+            showNotification(TEXTS.noGameToReveal);
         }
         return;
     }
 
-    const letter = input.toUpperCase();
-    if (!input || input.length > 1 || !/[a-zA-Z]/.test(input)) {
-        showNotification('Por favor, insira uma única letra válida.');
+    if (!game || letterInput.disabled) return;
+
+    if (!/^\p{L}$/u.test(input)) {
+        showNotification(TEXTS.invalidLetter);
         return;
     }
 
-    if (game.correctLetters.includes(letter) || game.wrongLetters.includes(letter)) {
-        showNotification('Você já tentou essa letra.');
+    const letter = baseLetter(input.toUpperCase());
+    if (game.triedLetters.includes(letter)) {
+        showNotification(TEXTS.alreadyTried);
         return;
     }
+    game.triedLetters.push(letter);
 
-    if (game.word.includes(letter)) {
-        for (let i = 0; i < game.word.length; i++) {
-            if (game.word[i] === letter) {
-                game.correctLetters[i] = letter;
-            }
+    let found = false;
+    for (let i = 0; i < game.word.length; i++) {
+        if (baseLetter(game.word[i]) === letter) {
+            game.correctLetters[i] = game.word[i]; // show the letter as written, with its accent
+            found = true;
         }
-        const mensagemAcerto = mensagensAcerto[Math.floor(Math.random() * mensagensAcerto.length)];
-        showNotification(mensagemAcerto, acertarSound);
+    }
+
+    if (found) {
+        const correctMessage = correctMessages[Math.floor(Math.random() * correctMessages.length)];
+        showNotification(correctMessage, correctSound);
     } else {
         game.wrongLetters.push(letter);
         game.attempts--;
-        const mensagemErro = mensagensErro[Math.floor(Math.random() * mensagensErro.length)];
-        showNotification(`${mensagemErro} Tentativas restantes: ${game.attempts}.`, errarSound);
+        const wrongMessage = wrongMessages[Math.floor(Math.random() * wrongMessages.length)];
+        showNotification(`${wrongMessage} ${format(TEXTS.attemptsLeft, { attempts: game.attempts })}`, wrongSound);
     }
 
     updateDisplay();
     checkGameEnd();
 }
 
-// Verifica se o jogo terminou
+// Check whether the game has ended
 function checkGameEnd() {
     if (!game.correctLetters.includes('_')) {
-        endMessage.textContent = `Parabéns, você ganhou! A palavra era ${game.word}.`;
-        playSound(ganharSound); // Usa a nova função para tocar o som
+        endMessage.textContent = format(TEXTS.won, { word: game.word });
+        playSound(winSound);
         endGame();
     } else if (game.attempts <= 0) {
-        endMessage.textContent = `Você perdeu! A palavra era ${game.word}.`;
-        playSound(perderSound); // Usa a nova função para tocar o som
+        endMessage.textContent = format(TEXTS.lost, { word: game.word });
+        playSound(loseSound);
         endGame();
     }
 }
 
-// Finaliza o jogo
+// End the game
 function endGame() {
     letterInput.disabled = true;
     guessButton.disabled = true;
