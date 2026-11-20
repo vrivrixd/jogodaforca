@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <title>Jogo da Forca / Hangman</title>
+  <rect width="64" height="64" rx="14" fill="#3d8b3d"/>
+  <g fill="none" stroke="#ffd54a" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M20 40 L32 10 L44 40"/>
+    <path d="M24.8 30 H39.2"/>
+  </g>
+  <g fill="none" stroke="#ffffff" stroke-width="5" stroke-linecap="round">
+    <path d="M10 53 H20"/>
+    <path d="M27 53 H37"/>
+    <path d="M44 53 H54"/>
+  </g>
+</svg>
